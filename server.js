@@ -4018,7 +4018,7 @@ cache(function(data, match, sendBadge, request) {
   });
 }));
 
-// GitHub languages integration.
+//GitHub languages integration.
 camp.route(/^\/github\/languages\/(top|count|code-size)\/([^/]+)\/([^/]+)\.(svg|png|gif|jpg|json)$/,
 cache(function(data, match, sendBadge, request) {
   var type = match[1];
