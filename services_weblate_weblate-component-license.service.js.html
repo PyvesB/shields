@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: core/service-test-runner/services-for-title.js</title>
+    <title>JSDoc: Source: services/weblate/weblate-component-license.service.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: core/service-test-runner/services-for-title.js</h1>
+    <h1 class="page-title">Source: services/weblate/weblate-component-license.service.js</h1>
 
     
 
@@ -26,39 +26,62 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/**
- * @module
- */
+            <pre class="prettyprint source linenums"><code>import Joi from 'joi'
+import { BaseJsonService } from '../index.js'
+import { optionalUrl } from '../validators.js'
 
-import difference from 'lodash.difference'
+const schema = Joi.object({
+  license: Joi.string().required(),
+}).required()
+
+const queryParamSchema = Joi.object({
+  server: optionalUrl,
+}).required()
 
 /**
- * Given a pull request title like
- * '[Travis Sonar] Support user token authentication'
- * extract the list of service names in square brackets
- * as an array of strings.
- *
- * @param {string} title Pull Request title
- * @returns {string[]} Array of service names
+ * This badge displays the license of a component on a Weblate instance.
  */
-function servicesForTitle(title) {
-  const bracketed = /\[([^\]]+)\]/g
-
-  const preNormalized = title.toLowerCase()
-
-  let services = []
-  let match
-  while ((match = bracketed.exec(preNormalized))) {
-    const [, bracketed] = match
-    services = services.concat(bracketed.split(' '))
+export default class WeblateComponentLicense extends BaseJsonService {
+  static category = 'license'
+  static route = {
+    base: 'weblate/l',
+    pattern: ':project/:component',
+    queryParamSchema,
   }
-  services = services.filter(Boolean).map(service => service.toLowerCase())
 
-  const ignored = ['wip', 'rfc', 'security']
-  return difference(services, ignored)
+  static examples = [
+    {
+      title: 'Weblate component license',
+      namedParams: { project: 'godot-engine', component: 'godot' },
+      queryParams: { server: 'https://hosted.weblate.org' },
+      staticPreview: this.render({ license: 'MIT' }),
+      keywords: ['i18n', 'translation', 'internationalization'],
+    },
+  ]
+
+  static defaultBadgeData = { label: 'license', color: 'informational' }
+
+  static render({ license }) {
+    return { message: `${license}` }
+  }
+
+  async fetch({ project, component, server = 'https://hosted.weblate.org' }) {
+    return this._requestJson({
+      schema,
+      url: `${server}/api/components/${project}/${component}/`,
+      errorMessages: {
+        403: 'access denied by remote server',
+        404: 'component not found',
+        429: 'rate limited by remote server',
+      },
+    })
+  }
+
+  async handle({ project, component }, { server }) {
+    const { license } = await this.fetch({ project, component, server })
+    return this.constructor.render({ license })
+  }
 }
-
-export default servicesForTitle
 </code></pre>
         </article>
     </section>

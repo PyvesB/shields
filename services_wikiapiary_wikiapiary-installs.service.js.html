@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: core/service-test-runner/services-for-title.js</title>
+    <title>JSDoc: Source: services/wikiapiary/wikiapiary-installs.service.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: core/service-test-runner/services-for-title.js</h1>
+    <h1 class="page-title">Source: services/wikiapiary/wikiapiary-installs.service.js</h1>
 
     
 
@@ -26,39 +26,114 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/**
- * @module
- */
+            <pre class="prettyprint source linenums"><code>import Joi from 'joi'
+import { metric } from '../text-formatters.js'
+import { BaseJsonService, NotFound } from '../index.js'
 
-import difference from 'lodash.difference'
+const documentation = `
+  &lt;p>
+    The name of an extension is case-sensitive excluding the first character.
+  &lt;/p>
+  &lt;p>
+    For example, in the case of &lt;code>ParserFunctions&lt;/code>, the following are
+    valid:
+    &lt;ul>
+      &lt;li>&lt;code>ParserFunctions&lt;/code>&lt;/li>
+      &lt;li>&lt;code>parserFunctions&lt;/code>&lt;/li>
+    &lt;/ul>
+
+    However, the following are invalid:
+    &lt;ul>
+      &lt;li>&lt;code>parserfunctions&lt;/code>&lt;/li>
+      &lt;li>&lt;code>Parserfunctions&lt;/code>&lt;/li>
+      &lt;li>&lt;code>pARSERfUNCTIONS&lt;/code>&lt;/li>
+    &lt;/ul>
+  &lt;/p>
+`
+
+const schema = Joi.object({
+  query: Joi.object({
+    results: Joi.alternatives([
+      Joi.object()
+        .required()
+        .pattern(/^\w+:.+$/, {
+          printouts: Joi.object({
+            'Has website count': Joi.array()
+              .required()
+              .items(Joi.number().required()),
+          }).required(),
+        }),
+      Joi.array().required(),
+    ]).required(),
+  }).required(),
+}).required()
 
 /**
- * Given a pull request title like
- * '[Travis Sonar] Support user token authentication'
- * extract the list of service names in square brackets
- * as an array of strings.
+ * This badge displays the total installations of a MediaWiki extensions, skins,
+ * etc via Wikiapiary.
  *
- * @param {string} title Pull Request title
- * @returns {string[]} Array of service names
+ * {@link https://www.mediawiki.org/wiki/Manual:Extensions MediaWiki Extensions Manual}
  */
-function servicesForTitle(title) {
-  const bracketed = /\[([^\]]+)\]/g
-
-  const preNormalized = title.toLowerCase()
-
-  let services = []
-  let match
-  while ((match = bracketed.exec(preNormalized))) {
-    const [, bracketed] = match
-    services = services.concat(bracketed.split(' '))
+export default class WikiapiaryInstalls extends BaseJsonService {
+  static category = 'downloads'
+  static route = {
+    base: 'wikiapiary',
+    pattern: ':variant(extension|skin|farm|generator|host)/installs/:name',
   }
-  services = services.filter(Boolean).map(service => service.toLowerCase())
 
-  const ignored = ['wip', 'rfc', 'security']
-  return difference(services, ignored)
+  static examples = [
+    {
+      title: 'Wikiapiary installs',
+      namedParams: { variant: 'extension', name: 'ParserFunctions' },
+      staticPreview: this.render({ usage: 11170 }),
+      documentation,
+      keywords: ['mediawiki'],
+    },
+  ]
+
+  static defaultBadgeData = { label: 'installs', color: 'informational' }
+
+  static render({ usage }) {
+    return { message: metric(usage) }
+  }
+
+  static validate({ results }) {
+    if (Array.isArray(results))
+      throw new NotFound({ prettyMessage: 'not found' })
+  }
+
+  async fetch({ variant, name }) {
+    return this._requestJson({
+      schema,
+      url: `https://wikiapiary.com/w/api.php`,
+      options: {
+        qs: {
+          action: 'ask',
+          query: `[[${variant}:${name}]]|?Has_website_count`,
+          format: 'json',
+        },
+      },
+    })
+  }
+
+  async handle({ variant, name }) {
+    const response = await this.fetch({ variant, name })
+    const { results } = response.query
+
+    this.constructor.validate({ results })
+
+    const keyLowerCase = `${variant}:${name.toLowerCase()}`
+    const resultKey = Object.keys(results).find(
+      key => keyLowerCase === key.toLowerCase()
+    )
+
+    if (resultKey === undefined)
+      throw new NotFound({ prettyMessage: 'not found' })
+
+    const [usage] = results[resultKey].printouts['Has website count']
+    return this.constructor.render({ usage })
+  }
 }
-
-export default servicesForTitle
 </code></pre>
         </article>
     </section>
