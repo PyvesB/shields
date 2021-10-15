@@ -152,7 +152,7 @@
     "@types/mocha": "^9.0.0",
     "@types/node": "^16.7.10",
     "@types/react-helmet": "^6.1.2",
-    "@types/react-modal": "^3.12.1",
+    "@types/react-modal": "^3.13.0",
     "@types/react-select": "^4.0.17",
     "@types/styled-components": "5.1.13",
     "@typescript-eslint/eslint-plugin": "^4.29.0",
