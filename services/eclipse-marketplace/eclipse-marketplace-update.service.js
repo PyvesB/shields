@@ -17,7 +17,7 @@ export default class EclipseMarketplaceUpdate extends EclipseMarketplaceBase {
   static route = this.buildRoute('eclipse-marketplace/last-update')
   static examples = [
     {
-      title: 'Eclipse Marketplace',
+      title: 'Eclipse Marketplace Last Updated',
       namedParams: { name: 'notepad4e' },
       staticPreview: this.render({ date: new Date().getTime() }),
     },

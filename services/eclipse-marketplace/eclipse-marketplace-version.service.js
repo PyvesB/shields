@@ -15,7 +15,7 @@ export default class EclipseMarketplaceVersion extends EclipseMarketplaceBase {
   static route = this.buildRoute('eclipse-marketplace/v')
   static examples = [
     {
-      title: 'Eclipse Marketplace',
+      title: 'Eclipse Marketplace Version',
       namedParams: { name: 'notepad4e' },
       staticPreview: this.render({ version: '1.0.1' }),
     },

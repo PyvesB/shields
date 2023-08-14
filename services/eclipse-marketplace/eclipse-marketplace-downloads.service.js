@@ -25,17 +25,20 @@ function DownloadsForInterval(downloadsInterval) {
     schema,
     interval = '',
     name,
+    exampleIntervalText,
   } = {
     month: {
       base: 'eclipse-marketplace/dm',
       interval: 'month',
       schema: monthlyResponseSchema,
       name: 'EclipseMarketplaceDownloadsMonth',
+      exampleIntervalText: 'Monthly',
     },
     total: {
       base: 'eclipse-marketplace/dt',
       schema: totalResponseSchema,
       name: 'EclipseMarketplaceDownloadsTotal',
+      exampleIntervalText: 'Total',
     },
   }[downloadsInterval]
 
@@ -45,7 +48,7 @@ function DownloadsForInterval(downloadsInterval) {
     static route = this.buildRoute(base)
     static examples = [
       {
-        title: 'Eclipse Marketplace',
+        title: `Eclipse Marketplace ${exampleIntervalText} Downloads`,
         namedParams: { name: 'notepad4e' },
         staticPreview: this.render({ downloads: 30000 }),
       },

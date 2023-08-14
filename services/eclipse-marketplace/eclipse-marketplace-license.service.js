@@ -14,7 +14,7 @@ export default class EclipseMarketplaceLicense extends EclipseMarketplaceBase {
   static route = this.buildRoute('eclipse-marketplace/l')
   static examples = [
     {
-      title: 'Eclipse Marketplace',
+      title: 'Eclipse Marketplace License',
       namedParams: { name: 'notepad4e' },
       staticPreview: this.render({ license: 'GPL' }),
     },

@@ -15,7 +15,7 @@ export default class EclipseMarketplaceFavorites extends EclipseMarketplaceBase 
   static route = this.buildRoute('eclipse-marketplace/favorites')
   static examples = [
     {
-      title: 'Eclipse Marketplace',
+      title: 'Eclipse Marketplace Favorites',
       namedParams: { name: 'notepad4e' },
       staticPreview: this.render({ favorited: 55 }),
     },
