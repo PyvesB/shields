@@ -1,5 +1,10 @@
 import log from '../server/log.js'
-import { NotFound, InvalidResponse, Inaccessible } from './errors.js'
+import {
+  NotFound,
+  InvalidResponse,
+  Inaccessible,
+  EmptyResponse,
+} from './errors.js'
 
 const defaultErrorMessages = {
   404: 'not found',
@@ -27,6 +32,10 @@ export default function checkErrorResponse(httpErrors = {}, logErrors = [429]) {
       } else {
         error = new InvalidResponse(props)
       }
+    }
+
+    if (!buffer || buffer.length === 0) {
+      error = new EmptyResponse()
     }
 
     if (logErrors.includes(res.statusCode)) {

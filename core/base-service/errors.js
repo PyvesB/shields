@@ -101,6 +101,29 @@ class InvalidResponse extends ShieldsRuntimeError {
 }
 
 /**
+ * Throw this error when an upstream API responds with a 200 but an empty
+ * body. This is treated specially from a plain InvalidResponse so services
+ * can surface a clearer message.
+ */
+class EmptyResponse extends ShieldsRuntimeError {
+  get name() {
+    return 'EmptyResponse'
+  }
+
+  get defaultPrettyMessage() {
+    return 'empty response'
+  }
+
+  constructor(props = {}) {
+    const message = props.underlyingError
+      ? `Empty Response: ${props.underlyingError.message}`
+      : 'Empty Response'
+    super(props, message)
+    this.response = props.response
+  }
+}
+
+/**
  * Throw this if we can't contact an upstream API
  * or to wrap a 5XX response
  */
@@ -217,6 +240,7 @@ export {
   NotFound,
   ImproperlyConfigured,
   InvalidResponse,
+  EmptyResponse,
   Inaccessible,
   InvalidParameter,
   Deprecated,
